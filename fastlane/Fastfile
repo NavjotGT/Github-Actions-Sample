@@ -1,0 +1,36 @@
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:android)
+
+before_all do
+  f = File.open("../local.properties", "r")
+  ENV["SLACK_URL"] = f.each_line.to_a.last.split('=').last
+  f.close
+end
+
+platform :android do
+  desc "Runs all the tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Submit a new Beta Build to Crashlytics Beta"
+  lane :beta do
+    gradle(task: 'assemble', build_type: 'Release')
+    slack(message: 'Successfully distributed a new beta build')
+    # crashlytics
+  end
+
+  desc "Deploy a new version to the Google Play"
+  lane :deploy do
+    gradle(task: "clean assembleRelease")
+    upload_to_play_store
+  end
+
+  error do |lane, exception|
+    slack(
+      message: exception.message,
+      success: false)
+  end
+end
