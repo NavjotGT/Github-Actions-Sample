@@ -4,9 +4,11 @@
 default_platform(:android)
 
 before_all do
-  f = File.open("../local.properties", "r")
-  ENV["SLACK_URL"] = f.each_line.to_a.last.split('=').last
-  f.close
+   if(!ENV["SLACK_URL"])
+      f = File.open("../local.properties", "r")
+      ENV["SLACK_URL"] = f.each_line.to_a.last.split('=').last
+      f.close
+  end
 end
 
 platform :android do
